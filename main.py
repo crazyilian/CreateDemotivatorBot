@@ -1,5 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 import Template
+import time
+
 
 
 def add_image(template, areas, img):
@@ -72,6 +74,7 @@ def get_font(path, text, w, h, min, max):
 font = "fonts/thamesc-regular.ttf"
 font_caption = "fonts/verdana-regular.ttf"
 
+tic = time.time()
 img = make_demotivator(img=Image.open('megumin.jpg'),
                        title='Кто?',
                        caption='Не знаю',
@@ -90,5 +93,8 @@ img = make_demotivator(img=img,
                        title='Ладно',
                        caption='Прохладно',
                        font=font, font_caption=font_caption)
+
+print('time:', time.time() - tic)
+Template.showmem()
 
 img.save('temp.png')
