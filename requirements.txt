@@ -1,3 +1,2 @@
 psutil
--e git://github.com/errkk/gitpil.git#egg=PIL
 Pillow
