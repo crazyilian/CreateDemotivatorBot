@@ -98,3 +98,4 @@ print('time:', time.time() - tic)
 Template.showmem()
 
 img.save('temp.png')
+time.sleep(300)
