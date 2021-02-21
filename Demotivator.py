@@ -1,7 +1,6 @@
-from PIL import Image, ImageDraw, ImageFont
+from PIL import ImageDraw, ImageFont, Image
 import Template
-import time
-
+from Photo import get_path, next_photo_name
 
 
 def add_image(template, areas, img):
@@ -28,14 +27,14 @@ def add_text(template, areas, area_name, text, font_path, min_size=10, max_size=
         h += min(font.getsize(line)[1], font.size)
 
 
-def make_demotivator(img=None, title=None, caption=None, font=None, font_caption=None):
+def make_demotivator_binary(img=None, title=None, caption=None, font=None, font_caption=None):
     if not img:
-        template, areas = Template.get_template_areas(Template.IMAGE_MAX_HEIGHT)
+        template, areas = Template.get_template_and_areas(Template.IMAGE_MAX_HEIGHT)
     else:
         new_height = img.height * Template.IMAGE_WIDTH // img.width
         new_height = max(new_height, Template.IMAGE_MIN_HEIGHT)
         new_height = min(new_height, Template.IMAGE_MAX_HEIGHT)
-        template, areas = Template.get_template_areas(new_height)
+        template, areas = Template.get_template_and_areas(new_height)
     if img:
         add_image(template, areas, img)
     if caption:
@@ -71,31 +70,12 @@ def get_font(path, text, w, h, min, max):
     return ImageFont.truetype(path, l)
 
 
-font = "fonts/thamesc-regular.ttf"
-font_caption = "fonts/verdana-regular.ttf"
-
-tic = time.time()
-img = make_demotivator(img=Image.open('megumin.jpg'),
-                       title='Кто?',
-                       caption='Не знаю',
-                       font=font, font_caption=font_caption)
-
-img = make_demotivator(img=img,
-                       title='Мегумин',
-                       font=font, font_caption=font_caption)
-
-img = make_demotivator(img=img,
-                       title='А Мегумакс?',
-                       # caption='ахахахпхахапахпхапапахп',
-                       font=font, font_caption=font_caption)
-
-img = make_demotivator(img=img,
-                       title='Ладно',
-                       caption='Прохладно',
-                       font=font, font_caption=font_caption)
-
-print('time:', time.time() - tic)
-Template.showmem()
-
-img.save('temp.png')
-time.sleep(300)
+def make_demotivator(img_name=None, title=None, caption=None, font=None, font_caption=None):
+    if img_name is None:
+        img = None
+    else:
+        img = Image.open(get_path(img_name)).convert('RGB')
+    res = make_demotivator_binary(img, title, caption, font, font_caption)
+    demotivator_name = next_photo_name(img_name)
+    res.save(get_path(demotivator_name), 'JPEG')
+    return demotivator_name

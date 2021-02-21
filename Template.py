@@ -1,6 +1,4 @@
 from PIL import ImageColor, Image, ImageDraw
-import os
-import psutil
 import copy
 
 
@@ -76,7 +74,7 @@ def get_areas(img, explanation):
 #             img.putpixel((x, y), col)
 
 
-def calc_template_areas(img_height):
+def calc_template_and_areas(img_height):
     img = get_template(img_height)
     areas = get_areas(img, explanation)
     draw = ImageDraw.Draw(img)
@@ -86,18 +84,12 @@ def calc_template_areas(img_height):
     return img, areas
 
 
-def get_template_areas(img_height):
+def get_template_and_areas(img_height):
     global memo_templates_areas
     if img_height not in memo_templates_areas:
-        memo_templates_areas[img_height] = calc_template_areas(img_height)
+        memo_templates_areas[img_height] = calc_template_and_areas(img_height)
     res = copy.deepcopy(memo_templates_areas[img_height])
     if len(memo_templates_areas) > MEMOIZATION_LENGTH:
         memo_templates_areas.clear()
         print('CLEARED')
     return res
-
-
-def showmem():
-    process = psutil.Process(os.getpid())
-    mem = process.memory_info().rss
-    print(mem / 1024 / 1024, 'MB')
