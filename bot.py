@@ -26,9 +26,15 @@ async def reply(event):
         return
     photo = await save_photo(reply.media.photo)
     text = message.raw_text
-    match = re.search(fr'(?i)^/make({BOTNAME}|)\s+(.*?)(|::(.*))$', text, re.DOTALL)
-    title = match.group(2).strip()
-    caption = match.group(4).strip()
+    match = re.search(fr'(?i)^/make({BOTNAME}|)(|\s+(.*?)(|::(.*)))$', text, re.DOTALL)
+    title = match.group(3)
+    caption = match.group(5)
+    if title is None:
+        title = ''
+    if caption is None:
+        caption = ''
+    title = title.strip()
+    caption = caption.strip()
     demotivator = make_demotivator(photo, title=title, caption=caption,
                                    font=get_font_path("ThamesC"),
                                    font_caption=get_font_path("Verdana"))
