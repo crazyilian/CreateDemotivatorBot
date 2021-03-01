@@ -1,5 +1,5 @@
 families = ['thamesc', 'uni-sans', 'verdana']
-single = ['impact', 'lobster']
+single = ['impact', 'lobster', 'comic-sans']
 
 
 def get_font_path(name, bold=False, italic=False):

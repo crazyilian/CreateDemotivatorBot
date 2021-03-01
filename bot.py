@@ -45,6 +45,32 @@ async def make(event):
     link_photo_id(my_message.media.photo.id, demotivator)
 
 
+@bot.on(events.NewMessage(pattern=fr'(?i)^/sans({BOTNAME}|)(\s|$)', incoming=True))
+async def sans(event):
+    message = event.message
+    reply = await event.get_reply_message()
+    if reply is None or not isinstance(reply.media, MessageMediaPhoto) or reply.media.photo is None:
+        await event.respond('To create demotivator, **reply** to a message with a **photo** and add command'
+                            ' `/sans` with text.\nCommand example: `/make What? :: It\'s magic`')
+        return
+    photo = await save_photo(reply.media.photo)
+    text = message.raw_text
+    match = re.search(fr'(?i)^/sans({BOTNAME}|)(|\s+(.*?)(|::(.*)))$', text, re.DOTALL)
+    title = match.group(3)
+    caption = match.group(5)
+    if title is None:
+        title = ''
+    if caption is None:
+        caption = ''
+    title = title.strip()
+    caption = caption.strip()
+    demotivator = make_demotivator(photo, title=title, caption=caption,
+                                   font=get_font_path("Comic Sans"),
+                                   font_caption=get_font_path("Verdana"))
+    my_message = await event.respond(file=get_path(demotivator))
+    link_photo_id(my_message.media.photo.id, demotivator)
+
+
 def text_wordwrap(text_type, chosen):
     def button(text, data):
         return Button.inline(
