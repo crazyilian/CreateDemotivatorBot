@@ -10,11 +10,9 @@ async def f():
     await bot.send_message(404377069, s)
 
 
-
 try:
     fix_tmp()
     clear_tmp()
-    # bot.send_message()
     bot.loop.run_until_complete(f())
     bot.run_until_disconnected()
 except Exception as e:

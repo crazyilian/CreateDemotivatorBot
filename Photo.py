@@ -1,50 +1,36 @@
-import os
 from Common import *
+import os
 
 
-id_to_name = {}
+photos = set()
 
 
 async def save_photo(photo):
     id = photo.id
-    if id not in id_to_name:
-        name = str(id)
-        id_to_name[id] = name
-        await bot.download_media(photo, get_path(name))
-    else:
-        name = id_to_name[id]
-    return name
+    if id not in photos:
+        await bot.download_media(photo, get_path(id))
+        photos.add(id)
+    return get_path(id)
 
 
-def link_photo_id(id, dst):
-    id_to_name[id] = dst
+def rename_to_id(name, id):
+    os.rename(get_path(name), get_path(id))
+    photos.add(id)
 
 
-def get_name(path):
+def get_id(path):
     return os.path.splitext(os.path.basename(path))[0]
 
 
 def get_path(name):
+    name = str(name)
+    if name.startswith(os.path.join('tmp', '')):
+        return name
     return os.path.join('tmp', name + '.jpg')
 
 
-def next_photo_name(filename):
-    if filename is None:
-        return random_sequence(20)
-    filename += '_'
-    prefixes = (name[len(filename):] for name in id_to_name.values() if name.startswith(filename))
-    matched = (name for name in prefixes if '_' not in name)
-    numbers = (0,) + tuple(int(name) for name in matched if name.isdigit())
-    last = max(numbers)
-    filename += str(last + 1)
-    if len(filename) > 64:
-        print(filename)
-        filename = random_sequence(20)
-    return filename
-
-
 def clear_tmp():
-    id_to_name.clear()
+    photos.clear()
     for filename in os.listdir('tmp'):
         os.remove(os.path.join('tmp', filename))
 

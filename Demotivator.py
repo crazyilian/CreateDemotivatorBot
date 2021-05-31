@@ -1,81 +1,130 @@
-from PIL import ImageDraw, ImageFont, Image
-import Template
-from Photo import get_path, next_photo_name
+from PIL import Image, ImageDraw, ImageFont
+import Fonts
+from random import randint
+from Photo import get_path
 
 
-def add_image(template, areas, img):
-    rect = areas['image']
-    img = img.resize((rect[2] - rect[0] + 1, rect[3] - rect[1] + 1))
-    template.paste(img, (rect[0], rect[1]))
+image_width = 616
+image_max_height = 800
+image_min_height = 400
+demotivator_width = 750
 
 
-def add_text(template, areas, area_name, text, font_path, min_size=10, max_size=70):
-    if not text:
-        return
-    rect = areas[area_name]
-    font = get_font(font_path, text, rect[2] - rect[0], rect[3] - rect[1], min_size, max_size)
-    draw = ImageDraw.Draw(template)
-    center_x = (rect[0] + rect[2]) // 2
-    center_y = (rect[1] + rect[3]) // 2
-    text_width, text_height = get_text_size(font, text)
-    h = center_y - text_height // 2
-    lines = text.split('\n')
-    if 'thamesc' not in font_path and 'uni-sans' not in font_path:
-        h -= 14
-    for line in lines:
-        draw.text((center_x, h), line, 'white', font=font, anchor='ma')
-        h += min(font.getsize(line)[1], font.size)
+class Demotivator:
 
+    def __init__(self, imgW, imgH, font_title, font_caption):
+        self.font_title = font_title
+        self.font_caption = font_caption
 
-def make_demotivator_binary(img=None, title=None, caption=None, font=None, font_caption=None):
-    if not img:
-        template, areas = Template.get_template_and_areas(Template.IMAGE_MAX_HEIGHT)
-    else:
-        new_height = img.height * Template.IMAGE_WIDTH // img.width
-        new_height = max(new_height, Template.IMAGE_MIN_HEIGHT)
-        new_height = min(new_height, Template.IMAGE_MAX_HEIGHT)
-        template, areas = Template.get_template_and_areas(new_height)
-    if img:
-        add_image(template, areas, img)
-    if caption:
-        if title:
-            add_text(template, areas, 'title', title, font)
-        add_text(template, areas, 'caption', caption, font_caption, max_size=29)
-    else:
-        if title:
-            add_text(template, areas, 'text', title, font)
-        template = template.crop((0, 0, template.width, template.height - (areas['caption'][3] - areas['caption'][1])))
-    return template
+        imgH = imgH * image_width // imgW
+        imgW = image_width
+        imgH = min(imgH, image_max_height)
+        imgH = max(imgH, image_min_height)
+        self.imgW = imgW
+        self.imgH = imgH
+        self.outline = 11
+        self.outlineW = 3
 
+        self.w = demotivator_width
+        ident = (demotivator_width - image_width) // 2
+        self.ident = ident
 
-def get_text_size(font, text):
-    w, h = 0, 0
-    for line in text.split('\n'):
-        ww, hh = font.getsize(line)
-        h += min(hh, font.size)
-        w = max(w, ww)
-    return w, h
+        self.textW = imgW + self.outline * 2
+        self.textEndH = ident + imgH + self.outline + ident // 2
+        self.h = self.textEndH + ident // 2
 
+        self.imgStart = (ident, ident)
+        self.imgEnd = (self.imgStart[0] + imgW, self.imgStart[1] + imgH)
 
-def get_font(path, text, w, h, min, max):
-    l, r = min, max + 1
-    while r - l > 1:
-        m = (l + r) // 2
-        font = ImageFont.truetype(path, m)
-        fw, fh = get_text_size(font, text)
-        if fw > w or fh > h:
-            r = m
+        self.build()
+
+    def build(self):
+        self.img = Image.new('RGB', (self.w, self.h), 'black')
+        self.imgd = ImageDraw.Draw(self.img)
+        d1 = self.outline
+        d2 = self.outline - self.outlineW
+        self.imgd.rectangle(((self.imgStart[0] - d1, self.imgStart[1] - d1),
+                             (self.imgEnd[0] + d1, self.imgEnd[1] + d1)), fill='white')
+        self.imgd.rectangle(((self.imgStart[0] - d2, self.imgStart[1] - d2),
+                             (self.imgEnd[0] + d2, self.imgEnd[1] + d2)), fill='black')
+
+    def add_photo(self, photo=None):
+        if photo:
+            photo = photo.resize((self.imgW, self.imgH))
+            self.img.paste(photo, self.imgStart)
         else:
-            l = m
-    return ImageFont.truetype(path, l)
+            self.imgd.rectangle((self.imgStart, self.imgEnd), fill='white')
+
+    def get_font_size(self, font, text):
+        ascent, descent = font.getmetrics()
+        text_width = font.getmask(text).getbbox()[2]
+        text_height = font.getmask(text).getbbox()[3] + descent
+        return (text_width, text_height)
+
+    def get_max_font_size(self, font_path, text, min, max):
+        l, r = min, max + 1
+        while (r - l > 1):
+            m = (l + r) // 2
+            font = ImageFont.truetype(font_path, m)
+            w, h = font.getsize(text)
+            if w > self.textW:
+                r = m
+            else:
+                l = m
+        return l
+
+    def get_font_start(self, font, text):
+        w, h = font.getsize(text)
+        cent = self.ident - self.outline + self.textW // 2
+        start = cent - w // 2
+        return (start, self.textEndH)
+
+    def fix_width(self):
+        new_h = self.textEndH + self.ident // 2
+        self.h = new_h
+        self.img = self.img.crop((0, 0, self.w, new_h))
+        self.imgd = ImageDraw.Draw(self.img)
+
+    def add_title(self, text):
+        font_path = self.font_title
+        sz = self.get_max_font_size(font_path, text, min=50, max=110)
+        font = ImageFont.truetype(font_path, sz)
+        start = self.get_font_start(font, text)
+        self.textEndH += font.getsize(text)[1] + self.ident // 2
+        self.fix_width()
+        self.imgd.text(start, text, 'white', font=font)
+
+    def add_caption(self, text):
+        font_path = self.font_caption
+        sz = self.get_max_font_size(font_path, text, min=30, max=40)
+        font = ImageFont.truetype(font_path, sz)
+        start = self.get_font_start(font, text)
+        self.textEndH += font.getsize(text)[1]
+        self.fix_width()
+        self.imgd.text(start, text, 'white', font=font)
+
+    def add_text(self, title=None, caption=None):
+        if title:
+            title = title.replace('\n', ' ')
+            self.add_title(title)
+        if caption:
+            captions = caption.split('\n')
+            for c in captions:
+                self.add_caption(c)
+
+    def save(self, path, *args, **kwargs):
+        self.img.save(path, *args, **kwargs)
 
 
-def make_demotivator(img_name=None, title=None, caption=None, font=None, font_caption=None):
-    if img_name is None:
-        img = None
-    else:
-        img = Image.open(get_path(img_name)).convert('RGB')
-    res = make_demotivator_binary(img, title, caption, font, font_caption)
-    demotivator_name = next_photo_name(img_name)
-    res.save(get_path(demotivator_name), 'JPEG')
-    return demotivator_name
+def make_demotivator(img_name, title=None, caption=None, font_title=None, font_caption=None):
+    if not font_title:
+        font_title = Fonts.get_font_path('ThamesC')
+    if not font_caption:
+        font_caption = Fonts.get_font_path('Verdana')
+    img = Image.open(get_path(img_name)).convert('RGB')
+    dem = Demotivator(*img.size, font_title, font_caption)
+    dem.add_photo(img)
+    dem.add_text(title=title, caption=caption)
+    name = hex(randint(1, 2**128 - 1))[2:]
+    dem.save(get_path(name))
+    return get_path(name)
