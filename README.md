@@ -1,7 +1,5 @@
 # Create Demotivator Bot
 
-**Hello!**
-
 This is the source code of Telegram Bot
 [@CreateDemotivatorBot](http://t.me/CreateDemotivatorBot).
 
