@@ -27,7 +27,7 @@ async def make(event):
         photo = await save_photo(reply.media.photo)
     elif isinstance(reply.media, MessageMediaDocument) \
             and reply.media.document is not None \
-            and reply.media.document.mime_type == 'image/webp':
+            and reply.media.document.mime_type.startswith('image'):
         photo = await save_photo(reply.media.document)
     else:
         await event.respond(smth_wrong_msg)
