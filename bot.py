@@ -45,6 +45,7 @@ async def make(event):
                                    font_caption=get_font_path("Verdana"))
     my_message = await event.respond(file=demotivator)
     rename_to_id(demotivator, my_message.media.photo.id)
+    print(event.chat.id, '::', event.chat.username)
 
 
 @bot.on(events.NewMessage(pattern=fr'(?i)^/help({BOTNAME}|)(\s|$)', incoming=True))
