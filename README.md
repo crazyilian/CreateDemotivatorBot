@@ -2,7 +2,7 @@
 
 **Hello!**
 
-This is sources of Telegram Bot
+This is the source code of Telegram Bot
 [@CreateDemotivatorBot](http://t.me/CreateDemotivatorBot).
 
 ## What this bot can do?
