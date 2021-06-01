@@ -125,6 +125,6 @@ def make_demotivator(img_name, title=None, caption=None, font_title=None, font_c
     dem = Demotivator(*img.size, font_title, font_caption)
     dem.add_photo(img)
     dem.add_text(title=title, caption=caption)
-    name = hex(randint(1, 2**128 - 1))[2:]
+    name = hex(randint(1, 2 ** 128 - 1))[2:]
     dem.save(get_path(name))
     return get_path(name)
