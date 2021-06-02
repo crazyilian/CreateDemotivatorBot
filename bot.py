@@ -54,7 +54,7 @@ async def help(event):
 
 🍉 This bot is designed to create demotivators from any picture you want.
 
-🥥 To use this bot, just send here your picture. Then reply to it with the command:
+🥥 To use this bot, just send here your picture. Then **reply** to it with the command:
 ```/make [title] :: [caption]```
 
 🍍 To see this message again, send the `/help` command.
